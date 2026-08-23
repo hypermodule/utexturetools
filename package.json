@@ -9,7 +9,9 @@
   "scripts": {
     "test": "node --test",
     "test:watch": "node --test --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:wasm": "node tools/build-wasm.mjs",
+    "build:browser": "tsc -p tsconfig.browser.json && node tools/copy-wasm.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

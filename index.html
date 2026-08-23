@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UTextureTools</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header class="topbar">
+      <div>
+        <h1>UTextureTools</h1>
+        <p class="intro">Inspect and edit cooked texture assets in the browser (UE 5.2–5.7).</p>
+      </div>
+      <button id="download" type="button" disabled>Download</button>
+    </header>
+
+    <section class="workspace" aria-label="Texture inspector workspace">
+      <aside class="panel files-panel">
+        <h2>Files</h2>
+        <div class="version-control">
+          <label for="version">UE Version:</label>
+          <select id="version"></select>
+        </div>
+        <p class="asset-name is-empty" id="asset-name">No asset selected</p>
+        <ul class="file-list" aria-label="Texture asset files">
+          <li class="file-item" id="file-uasset">
+            <span class="file-mark" aria-hidden="true">○</span>
+            <span class="file-name">.uasset</span>
+          </li>
+          <li class="file-item" id="file-uexp">
+            <span class="file-mark" aria-hidden="true">○</span>
+            <span class="file-name">.uexp</span>
+          </li>
+          <li class="file-item" id="file-ubulk">
+            <span class="file-mark" aria-hidden="true">○</span>
+            <span class="file-name">.ubulk</span>
+          </li>
+        </ul>
+
+        <label class="drop-zone is-disabled" id="drop-zone" for="files" aria-disabled="true">
+          <strong id="drop-message">Select UE version first</strong>
+          Drop the asset files here<br>or click to choose files
+        </label>
+        <input id="files" type="file" multiple accept=".uasset,.uexp,.ubulk,.uptnl" disabled>
+      </aside>
+
+      <section class="panel preview-panel">
+        <div class="preview-header">
+          <h2>Preview</h2>
+          <span id="texture-details">No texture loaded</span>
+        </div>
+        <div class="preview">
+          <canvas id="preview" width="1" height="1"></canvas>
+        </div>
+        <div class="replacement">
+          <span>Replace with PNG:</span>
+          <button id="select-png" type="button">Select PNG</button>
+          <label class="quality-control" id="quality-control" for="encoding-quality" hidden>
+            <span>Quality</span>
+            <input
+              id="encoding-quality"
+              type="range"
+              min="0"
+              max="18"
+              step="1"
+              value="10"
+              title="0 = fastest, 18 = highest quality"
+              aria-describedby="encoding-quality-value"
+            >
+            <output id="encoding-quality-value" for="encoding-quality">10</output>
+          </label>
+        </div>
+        <input id="replacement-png" type="file" accept=".png,image/png">
+      </section>
+
+      <aside class="panel inspector-panel">
+        <h2>Inspector</h2>
+        <div class="inspector-row">
+          <label for="mip">Mip</label>
+          <select id="mip" disabled></select>
+        </div>
+        <div class="inspector-row" id="normal-map-control" hidden>
+          <label for="is-normal-map">IsNormalMap</label>
+          <input id="is-normal-map" type="checkbox" checked>
+        </div>
+      </aside>
+    </section>
+
+    <section class="progress-panel" id="progress-panel" aria-live="polite" hidden>
+      <div class="progress-header">
+        <span id="progress-label">Working…</span>
+        <span class="progress-value" id="progress-value">Working…</span>
+      </div>
+      <progress id="operation-progress" aria-labelledby="progress-label" max="100"></progress>
+    </section>
+
+    <section class="panel messages-panel" aria-labelledby="messages-heading">
+      <h2 id="messages-heading">Messages</h2>
+      <ul class="messages" id="messages" role="list" aria-live="polite">
+        <li class="message message-info">
+          <span class="message-icon" aria-hidden="true">ℹ</span>
+          <span>Select UE version to begin.</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="about-panel">
+      <h2>About</h2>
+      <p>
+        This is a web app for making simple texture swap mods for UE5 games.
+        It is inspired by matyalatte's great
+        <a href="https://github.com/matyalatte/UE4-DDS-Tools" target="_blank">UE4-DDS-Tools</a>,
+        which unfortunately is no longer maintained. The main addition provided by this app is
+        support for Virtual Textures and UE 5.5–5.7. The project is
+        <a href="https://github.com/hypermodule/utexturetools" target="_blank">open-source on
+          GitHub</a>; contributions are welcome. Some advanced texture types (like texture arrays
+        and cubemaps) are not supported. If you find a case that this tool can't handle, remember
+        that you can use UE itself to make texture mods; you can learn about this in
+        <a href="https://github.com/Dmgvol/UE_Modding" target="_blank">Dmgvol's great modding
+        guide</a> (which also links to a very helpful UE modding discord). Happy modding!
+      </p>
+    </section>
+
+    <section class="changelog-panel">
+      <h2>Changelog</h2>
+      <ul class="changelog-list">
+        <li><strong>2026-08-31</strong> - Initial release.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="./vendor/jszip/jszip.min.js"></script>
+  <script type="module" src="./dist/browser.js"></script>
+</body>
+</html>

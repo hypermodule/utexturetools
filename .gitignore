@@ -63,4 +63,6 @@ TEST-results.xml
 .eslintcache
 *v8.log
 /dist/
+/wasm/build/
+/wasm/.emcache/
 .idea/
