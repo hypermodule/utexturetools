@@ -1,10 +1,10 @@
 # UTextureTools
 
 A web app for making simple texture swap mods for UE5 games. It is inspired by matyalatte's great
-UE4-DDS-Tools, which unfortunately is no longer maintained. The main addition provided by this app
-is support for Virtual Textures and UE 5.5–5.7. The project is open-source (MIT license) and 
-contributions are welcome. Some advanced texture types (like texture arrays and cubemaps) are not
-supported.
+[UE4-DDS-Tools](https://github.com/matyalatte/UE4-DDS-Tools), which unfortunately is no longer
+maintained. The main addition provided by this app is support for Virtual Textures and UE 5.5–5.7.
+The project is open-source (MIT license) and contributions are welcome. Some advanced texture types
+(like texture arrays and cubemaps) are not supported.
 
 If you find a case that this tool can't handle, remember that you can use UE itself to make texture 
 mods; you can learn about this in [Dmgvol's great modding guide](https://github.com/Dmgvol/UE_Modding) 
@@ -12,9 +12,8 @@ mods; you can learn about this in [Dmgvol's great modding guide](https://github.
 
 ## Prerequisites
 
-The normal build and test workflow requires [Node.js](https://nodejs.org/) 22.18.0 or newer and
-npm. No native build tools are needed because the compiled WebAssembly codec is checked into the
-repository.
+The normal build and test workflow requires [Node.js](https://nodejs.org/) 22.18.0 or newer and npm. No native
+build tools are needed because the compiled WebAssembly codec is checked into the repository.
 
 ## Building
 
