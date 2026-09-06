@@ -36,7 +36,7 @@ function replaceOrdinaryTexture(
   texture: TextureExport,
   encodedMips: readonly EncodedMip[],
 ): CookedAssetBundle {
-  const dataResources = makeOrdinaryDataResources(asset, texture, encodedMips);
+  const dataResources = makeOrdinaryDataResources(asset, encodedMips);
 
   const newTexture = texture.clone();
   newTexture.importedWidth = encodedMips[0].width;
@@ -86,30 +86,30 @@ async function replaceVirtualTexture(
 
 function makeOrdinaryDataResources(
   asset: CookedAsset,
-  texture: TextureExport,
   mips: readonly EncodedMip[],
 ): ObjectDataResource[] {
-  const oldMipResources = texture.mips.map(mip => (
-    asset.uasset.dataResourceMap[mip.dataResourceIndex]
-  ));
+  let inline: ObjectDataResource | undefined;
+  let external: ObjectDataResource | undefined;
 
-  const inlineIndex = oldMipResources.findIndex(resource => resource.bulkType === BulkType.Uexp);
-  const inlineTemplate = inlineIndex === -1 ? undefined : oldMipResources[inlineIndex];
-  const externalTemplate = oldMipResources.find(resource => (
-    resource.bulkType === BulkType.Ubulk || resource.bulkType === BulkType.Uptnl
-  ));
-  const firstInlineMip = inlineIndex === -1 ? undefined : texture.mips[inlineIndex];
-  const inlineMaximumDimension =
-    firstInlineMip === undefined ? 0 : Math.max(firstInlineMip.width, firstInlineMip.height);
+  for (const {resource} of asset.getMipsAndDataResources()) {
+    if (resource.bulkType === BulkType.Uexp) {
+      inline ??= resource;
+    } else if (
+      resource.bulkType === BulkType.Ubulk ||
+      resource.bulkType === BulkType.Uptnl
+    ) {
+      external ??= resource;
+    }
+  }
+
+  const inlineThreshold = asset.getInlineMipThreshold();
 
   return mips.map(mip => {
-    // Mirror the original storage layout: mips that were inline stay
-    // inline while everything else goes to the external bulk file
-    const shouldStoreInline = externalTemplate === undefined || (
-      inlineTemplate !== undefined && Math.max(mip.width, mip.height) <= inlineMaximumDimension
-    );
+    // Preserve the original size cutoff
+    const shouldStoreInline =
+      inlineThreshold !== undefined && Math.max(mip.width, mip.height) <= inlineThreshold;
 
-    const template = shouldStoreInline ? inlineTemplate : externalTemplate;
+    const template = external === undefined || shouldStoreInline ? inline : external;
     if (template === undefined) {
       throw new Error("The texture does not contain a reusable bulk-data resource record.");
     }

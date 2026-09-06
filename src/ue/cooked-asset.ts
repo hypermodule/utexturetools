@@ -35,7 +35,7 @@ export class CookedAsset {
     }
 
     if (textureExports.length > 1) {
-      throw new Error("The asset contains multiple texture exports.");
+      throw new Error("Assets with multiple texture exports are not supported.");
     }
 
     return textureExports[0];
@@ -72,7 +72,7 @@ export class CookedAsset {
   }
 
   readMipData(mip: Mip): Uint8Array {
-    const resource = this.getDataResource(mip.dataResourceIndex);
+    const resource = this.getMipDataResource(mip);
 
     if (resource.bulkType === BulkType.Uexp || resource.bulkType === BulkType.None) {
       return mip.inlineData;
@@ -95,6 +95,29 @@ export class CookedAsset {
     }
 
     return source.subarray(bigint.toNumber(resource.serialOffset), bigint.toNumber(end));
+  }
+
+  getMipDataResource(mip: Mip): ObjectDataResource {
+    return this.getDataResource(mip.dataResourceIndex);
+  }
+
+  /** Yield each mip with its resource from this asset's header, in mip order. */
+  *getMipsAndDataResources(): IterableIterator<{mip: Mip; resource: ObjectDataResource}> {
+    const texture = this.getTextureExport();
+    for (const mip of texture.mips) {
+      yield {mip, resource: this.getMipDataResource(mip)};
+    }
+  }
+
+  /** Largest dimension of the first inline mip, or undefined if none are inline. */
+  getInlineMipThreshold(): number | undefined {
+    for (const {mip, resource} of this.getMipsAndDataResources()) {
+      if (resource.bulkType === BulkType.Uexp) {
+        return Math.max(mip.width, mip.height);
+      }
+    }
+
+    return undefined;
   }
 
   private getDataResource(dataResourceIndex: number): ObjectDataResource {
