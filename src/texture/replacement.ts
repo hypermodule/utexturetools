@@ -1,6 +1,6 @@
 import type {CookedAsset, CookedAssetBundle} from "../ue/cooked-asset.ts";
 import {BulkType, ObjectDataResource} from "../ue/uasset.ts";
-import {Mip, TextureExport} from "../ue/uexp.ts";
+import {Mip} from "../ue/uexp.ts";
 import type {TextureEncoder} from "./codec.ts";
 import {encodeMips, type EncodedMip} from "./encoding.ts";
 import {validateTextureReplacement} from "./replacement-validation.ts";
@@ -25,20 +25,19 @@ export async function replaceTexture(
 
   if (texture.virtualTextureData === null) {
     const encodedMips = await encodeMips(formatInfo, rgbaMips, encoder, options);
-    return replaceOrdinaryTexture(asset, texture, encodedMips);
+    return replaceOrdinaryTexture(asset, encodedMips);
   } else {
-    return replaceVirtualTexture(asset, texture, rgbaMips, encoder, options);
+    return replaceVirtualTexture(asset, rgbaMips, encoder, options);
   }
 }
 
 function replaceOrdinaryTexture(
   asset: CookedAsset,
-  texture: TextureExport,
   encodedMips: readonly EncodedMip[],
 ): CookedAssetBundle {
   const dataResources = makeOrdinaryDataResources(asset, encodedMips);
 
-  const newTexture = texture.clone();
+  const newTexture = asset.getTextureExport().clone();
   newTexture.importedWidth = encodedMips[0].width;
   newTexture.importedHeight = encodedMips[0].height;
   newTexture.mips = encodedMips.map((mipData, index) => {
@@ -58,30 +57,31 @@ function replaceOrdinaryTexture(
 
 async function replaceVirtualTexture(
   asset: CookedAsset,
-  texture: TextureExport,
   rgbaMips: readonly RgbaMip[],
   encoder: TextureEncoder | undefined,
   options: BcEncodeOptions,
 ): Promise<CookedAssetBundle> {
-  const replacement = texture.clone();
+  const texture = asset.getTextureExport();
+
+  const newTexture = texture.clone();
 
   const bulkPayloads = await rebuildVirtualTexture(
-    replacement.virtualTextureData!,
+    newTexture.virtualTextureData!,
     rgbaMips,
     encoder,
     options,
   );
 
-  const resources = makeVirtualDataResources(asset, texture.virtualTextureData!, bulkPayloads);
+  const dataResources = makeVirtualDataResources(asset, texture.virtualTextureData!, bulkPayloads);
 
-  replacement.importedWidth = rgbaMips[0].width;
-  replacement.importedHeight = rgbaMips[0].height;
+  newTexture.importedWidth = rgbaMips[0].width;
+  newTexture.importedHeight = rgbaMips[0].height;
 
   // Virtual textures store mips in virtualTextureData
-  replacement.mipCount = 0;
-  replacement.mips = [];
+  newTexture.mipCount = 0;
+  newTexture.mips = [];
 
-  return asset.withTextureExport(replacement, resources, bulkPayloads);
+  return asset.withTextureExport(newTexture, dataResources, bulkPayloads);
 }
 
 function makeOrdinaryDataResources(
