@@ -416,6 +416,10 @@ select:disabled { opacity: 0.5; }
     color: var(--color-accent);
 }
 
+.about-panel p + p {
+    margin-top: 8px;
+}
+
 .changelog-list {
     margin: 0;
     padding-left: 1.25rem;

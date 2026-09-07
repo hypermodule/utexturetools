@@ -2,11 +2,16 @@
 
 **Live App:** [https://hypermodule.github.io/utexturetools/](https://hypermodule.github.io/utexturetools/)
 
-A web app for making simple texture swap mods for UE5 games. It is inspired by matyalatte's great
+A web app for making simple texture mods for UE5 games. It is inspired by matyalatte's great
 [UE4-DDS-Tools](https://github.com/matyalatte/UE4-DDS-Tools), which unfortunately is no longer
 maintained. The main addition provided by this app is support for Virtual Textures and UE 5.5–5.7.
 The project is open-source (MIT license) and contributions are welcome. Some advanced texture types
 (like texture arrays and cubemaps) are not supported.
+
+The app currently assumes that the texture asset is supplied in "legacy format"
+(.uasset + .uexp + .ubulk), so it's intended to be used together with a packaging
+tool like [retoc](https://github.com/trumank/retoc) (for IoStore games) or
+[repak](https://github.com/trumank/repak) (for plain pak games).
 
 If you find a case that this tool can't handle, remember that you can use UE itself to make texture 
 mods; you can learn about this in [Dmgvol's great modding guide](https://github.com/Dmgvol/UE_Modding) 
