@@ -62,14 +62,13 @@ let activeProgressId: number | undefined;
 versionSelect.add(new Option("Select UE version", "", true, true));
 
 for (const [value, label] of [
-  // [UEVersion.UE5_0, "5.0"],
-  // [UEVersion.UE5_1, "5.1"],
   [UEVersion.UE5_2, "5.2"],
   [UEVersion.UE5_3, "5.3"],
   [UEVersion.UE5_4, "5.4"],
   [UEVersion.UE5_5, "5.5"],
   [UEVersion.UE5_6, "5.6"],
   [UEVersion.UE5_7, "5.7"],
+  [UEVersion.UE5_8, "5.8"],
 ] as const) {
   versionSelect.add(new Option(label, String(value)));
 }
