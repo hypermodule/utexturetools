@@ -65,9 +65,7 @@ export class CookedAsset {
       uasset: uassetWriter.toUint8Array(),
       uexp: uexpWriter.toUint8Array(),
       ...(this.files.ubulk !== undefined || ubulk.bytes.byteLength > 0 ? {ubulk: ubulk.bytes} : {}),
-      ...(this.files.uptnl !== undefined || uptnl.bytes.byteLength > 0
-        ? {uptnl: uptnl.bytes}
-        : {}),
+      ...(this.files.uptnl !== undefined || uptnl.bytes.byteLength > 0 ? {uptnl: uptnl.bytes} : {}),
     };
   }
 

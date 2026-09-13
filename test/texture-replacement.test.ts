@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import {readFile} from "node:fs/promises";
 import {test} from "node:test";
 
 import {decodeTextureMip} from "../src/texture/decoding.ts";
@@ -10,19 +9,8 @@ import {UEVersion} from "../src/ue/versioning.ts";
 import {PACKAGE_FILE_TAG} from "../src/ue/summary.ts";
 import {BulkDataFlags, BulkType} from "../src/ue/uasset.ts";
 import {UINT32_MAX} from "../src/util.ts";
-import {loadWasm} from "./util.ts";
+import {loadWasm, readAsset} from "./util.ts";
 import {generateTextureMips} from "../src/texture/mips.ts";
-
-async function readAsset(basePath: string, version: UEVersion = UEVersion.UE5_4) {
-  const [uasset, uexp, ubulk] = await Promise.all(
-    [".uasset", ".uexp", ".ubulk"].map(extension => (
-      readFile(new URL(basePath + extension, import.meta.url))
-    )),
-  );
-  return parseAsset({uasset, uexp, ubulk}, version);
-}
-
-// -------- Swap tests --------
 
 test("Swap_UE5_2__Texture2D_BC1", async () => {
   const original = await readAsset("./assets/ue5_2/swap_bc1/original/T_Blocks_BC1_BC", UEVersion.UE5_2);
