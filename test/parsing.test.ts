@@ -2339,6 +2339,233 @@ test("UE5_7__Texture2D_BC1", async () => {
   assert.deepStrictEqual(tex.noneName, new MinimalName(0, 0));
 });
 
+test("UE5_8__Texture2D_BC1", async () => {
+  const version = UEVersion.UE5_8;
+
+  // ======== .uasset ========
+  const uassetPath = "./assets/ue5_8/T_Blocks2_1K_BC1_BC.uasset";
+  const uassetBytes = await readFile(new URL(uassetPath, import.meta.url));
+  const reader = new AssetReader(uassetBytes);
+  const uasset = UAsset.read(reader, version);
+
+  assert.strictEqual(uasset.fileSize, uassetBytes.length);
+  assert.strictEqual(uasset.fileSize, 1244);
+
+  // PackageFileSummary
+  const summary = uasset.summary;
+
+  assert.strictEqual(summary.tag, 0x9e2a83c1);
+  assert.strictEqual(summary.legacyFileVersion, -9);
+
+  assert.strictEqual(summary.fileVersionUE3, 0);
+  assert.strictEqual(summary.fileVersionUE4, 0);
+  assert.strictEqual(summary.fileVersionUE5, 0);
+  assert.strictEqual(summary.fileVersionLicenseeUE, 0);
+  assert.deepStrictEqual(summary.customVersions, []);
+
+  assert.deepStrictEqual(
+    Array.from(summary.savedHash),
+    [
+      0x5d, 0x59, 0x06, 0xfe, 0x88, 0x65, 0x6a, 0x44, 0xe0, 0x73,
+      0x14, 0xb6, 0x87, 0x25, 0x3a, 0xf7, 0x71, 0x9a, 0x76, 0x62,
+    ],
+  );
+  assert.strictEqual(summary.totalHeaderSize, 1244);
+
+  assert.strictEqual(summary.packageName, "/Game/Textures/T_Blocks2_1K_BC1_BC");
+
+  const expectedFlags = (
+    EPackageFlags.PKG_Cooked |
+    EPackageFlags.PKG_UnversionedProperties |
+    EPackageFlags.PKG_FilterEditorOnly
+  ) >>> 0;
+  assert.strictEqual(summary.packageFlags, expectedFlags);
+
+  assert.strictEqual(summary.nameCount, 10);
+  assert.strictEqual(summary.softObjectPathsCount, 0);
+  assert.strictEqual(summary.gatherableTextDataCount, 0);
+  assert.strictEqual(summary.exportCount, 1);
+  assert.strictEqual(summary.importCount, 3);
+  assert.strictEqual(summary.cellExportCount, 0);
+  assert.strictEqual(summary.cellImportCount, 0);
+  assert.strictEqual(summary.softPackageReferencesCount, 0);
+  assert.strictEqual(summary.importTypeHierarchiesCount, 0);
+
+  assert.deepStrictEqual(summary.guid, {
+    a: 0,
+    b: 0,
+    c: 0,
+    d: 0,
+  });
+
+  assert.strictEqual(summary.generations.length, 1);
+  const generation = summary.generations[0];
+  assert.strictEqual(generation.exportCount, 1);
+  assert.strictEqual(generation.nameCount, 10);
+
+  const emptyEngine = new EngineVersion(0, 0, 0, 0, "");
+  assert.deepStrictEqual(summary.savedByEngineVersion, emptyEngine);
+  assert.deepStrictEqual(summary.compatibleWithEngineVersion, emptyEngine);
+
+  assert.strictEqual(summary.compressionFlags, 0);
+  assert.strictEqual(summary.compressedChunksCount, 0);
+  assert.strictEqual(summary.packageSource, -980866167);
+  assert.deepStrictEqual(summary.additionalPackagesToCook, []);
+  assert.strictEqual(summary.preloadDependencyCount, 2);
+  assert.strictEqual(summary.namesReferencedFromExportDataCount, 2);
+
+  // NameMap
+  const expectedNames = [
+    "None",
+    "PF_DXT1",
+    "/Game/Textures/T_Blocks2_1K_BC1_BC",
+    "/Script/CoreUObject",
+    "/Script/Engine",
+    "Class",
+    "Default__Texture2D",
+    "Package",
+    "T_Blocks2_1K_BC1_BC",
+    "Texture2D",
+  ];
+  assert.deepStrictEqual(uasset.nameMap.map(x => x.name), expectedNames);
+
+  // ImportMap
+  assert.strictEqual(uasset.importMap.length, 3);
+
+  assert.deepStrictEqual(uasset.importMap[0].classPackage, new MinimalName(3, 0));
+  assert.deepStrictEqual(uasset.importMap[0].className, new MinimalName(5, 0));
+  assert.strictEqual(uasset.importMap[0].outerIndex, -2);
+  assert.deepStrictEqual(uasset.importMap[0].objectName, new MinimalName(9, 0));
+  assert.deepStrictEqual(uasset.importMap[0].packageName, new MinimalName(9, 0));
+  assert.strictEqual(uasset.importMap[0].importOptional, false);
+
+  assert.deepStrictEqual(uasset.importMap[1].classPackage, new MinimalName(3, 0));
+  assert.deepStrictEqual(uasset.importMap[1].className, new MinimalName(7, 0));
+  assert.strictEqual(uasset.importMap[1].outerIndex, 0);
+  assert.deepStrictEqual(uasset.importMap[1].objectName, new MinimalName(4, 0));
+  assert.deepStrictEqual(uasset.importMap[1].packageName, new MinimalName(4, 0));
+  assert.strictEqual(uasset.importMap[1].importOptional, false);
+
+  assert.deepStrictEqual(uasset.importMap[2].classPackage, new MinimalName(4, 0));
+  assert.deepStrictEqual(uasset.importMap[2].className, new MinimalName(9, 0));
+  assert.strictEqual(uasset.importMap[2].outerIndex, -2);
+  assert.deepStrictEqual(uasset.importMap[2].objectName, new MinimalName(6, 0));
+  assert.deepStrictEqual(uasset.importMap[2].packageName, new MinimalName(6, 0));
+  assert.strictEqual(uasset.importMap[2].importOptional, false);
+
+  // ExportMap
+  assert.strictEqual(uasset.exportMap.length, 1);
+
+  const exportObject = uasset.exportMap[0];
+  assert.strictEqual(exportObject.classIndex, -1);
+  assert.strictEqual(exportObject.superIndex, 0);
+  assert.strictEqual(exportObject.templateIndex, -3);
+  assert.strictEqual(exportObject.outerIndex, 0);
+  assert.deepStrictEqual(exportObject.objectName, new MinimalName(8, 0));
+  assert.strictEqual(exportObject.objectFlags, 3);
+  assert.strictEqual(exportObject.serialSize, 3038n);
+  assert.strictEqual(exportObject.forcedExport, false);
+  assert.strictEqual(exportObject.notForClient, false);
+  assert.strictEqual(exportObject.notForServer, false);
+  assert.strictEqual(exportObject.isInheritedInstance, false);
+  assert.strictEqual(exportObject.packageFlags, 0);
+  assert.strictEqual(exportObject.notAlwaysLoadedForEditorGame, true);
+  assert.strictEqual(exportObject.isAsset, true);
+  assert.strictEqual(exportObject.generatePublicHash, false);
+  assert.strictEqual(exportObject.firstExportDependency, 0);
+  assert.strictEqual(exportObject.serializationBeforeSerializationDependencies, 0);
+  assert.strictEqual(exportObject.createBeforeSerializationDependencies, 0);
+  assert.strictEqual(exportObject.serializationBeforeCreateDependencies, 2);
+  assert.strictEqual(exportObject.createBeforeCreateDependencies, 0);
+
+  // DependsMap
+  assert.deepStrictEqual(uasset.dependsMap, [[]]);
+
+  // PreloadDependencies
+  assert.deepStrictEqual(uasset.preloadDependencies, [-1, -3]);
+
+  // DataResourceMap
+  const expectedDataResources = [
+    {serialSize: 524288n, rawSize: 524288n, bulkDataFlags: expectedUbulkDataFlags, bulkType: BulkType.Ubulk},
+    {serialSize: 131072n, rawSize: 131072n, bulkDataFlags: expectedUbulkDataFlags, bulkType: BulkType.Ubulk},
+    {serialSize: 32768n, rawSize: 32768n, bulkDataFlags: expectedUbulkDataFlags, bulkType: BulkType.Ubulk},
+    {serialSize: 8192n, rawSize: 8192n, bulkDataFlags: expectedUbulkDataFlags, bulkType: BulkType.Ubulk},
+    {serialSize: 2048n, rawSize: 2048n, bulkDataFlags: expectedUexpDataFlags, bulkType: BulkType.Uexp},
+    {serialSize: 512n, rawSize: 512n, bulkDataFlags: expectedUexpDataFlags, bulkType: BulkType.Uexp},
+    {serialSize: 128n, rawSize: 128n, bulkDataFlags: expectedUexpDataFlags, bulkType: BulkType.Uexp},
+    {serialSize: 32n, rawSize: 32n, bulkDataFlags: expectedUexpDataFlags, bulkType: BulkType.Uexp},
+    {serialSize: 8n, rawSize: 8n, bulkDataFlags: expectedUexpDataFlags, bulkType: BulkType.Uexp},
+    {serialSize: 8n, rawSize: 8n, bulkDataFlags: expectedUexpDataFlags, bulkType: BulkType.Uexp},
+    {serialSize: 8n, rawSize: 8n, bulkDataFlags: expectedUexpDataFlags, bulkType: BulkType.Uexp},
+  ];
+
+  assert.strictEqual(uasset.dataResourceVersion, ObjectDataResourceVersion.AddedCookedIndex);
+  assert.strictEqual(uasset.dataResourceMap.length, expectedDataResources.length);
+  for (let i = 0; i < expectedDataResources.length; i++) {
+    const actual = uasset.dataResourceMap[i];
+    const expected = expectedDataResources[i];
+
+    assert.strictEqual(actual.flags, 0);
+    assert.strictEqual(actual.cookedIndex, 0);
+    assert.strictEqual(actual.duplicateSerialOffset, -1n);
+    assert.strictEqual(actual.serialSize, expected.serialSize);
+    assert.strictEqual(actual.rawSize, expected.rawSize);
+    assert.strictEqual(actual.outerIndex, 1);
+    assert.strictEqual(actual.bulkDataFlags, expected.bulkDataFlags);
+    assert.strictEqual(actual.bulkType, expected.bulkType);
+  }
+
+  // ======== .uexp ========
+  const uexpPath = uassetPath.replace(".uasset", ".uexp");
+  const uexpBytes = await readFile(new URL(uexpPath, import.meta.url));
+  const uexpReader = new AssetReader(uexpBytes);
+  const uexp = UExp.read(uexpReader, version, uasset);
+
+  assert.strictEqual(uexp.exports.length, 1);
+  const tex = uexp.exports[0];
+  assert.strictEqual(tex.kind, "texture");
+  assert.strictEqual(tex.className, "Texture2D");
+
+  assert.strictEqual(tex.serializeMipData, true);
+  assert.deepStrictEqual(tex.pixelFormatName, new MinimalName(1, 0));
+  assert.strictEqual(tex.importedWidth, 1024);
+  assert.strictEqual(tex.importedHeight, 1024);
+  assert.strictEqual(tex.packedData, 1);
+  assert.strictEqual(tex.pixelFormat, "PF_DXT1");
+  assert.strictEqual(tex.firstMipToSerialize, 0);
+  assert.strictEqual(tex.mipCount, 11);
+
+  const expectedMips = [
+    {inlineDataLength: 0, width: 1024, height: 1024},
+    {inlineDataLength: 0, width: 512, height: 512},
+    {inlineDataLength: 0, width: 256, height: 256},
+    {inlineDataLength: 0, width: 128, height: 128},
+    {inlineDataLength: 2048, width: 64, height: 64},
+    {inlineDataLength: 512, width: 32, height: 32},
+    {inlineDataLength: 128, width: 16, height: 16},
+    {inlineDataLength: 32, width: 8, height: 8},
+    {inlineDataLength: 8, width: 4, height: 4},
+    {inlineDataLength: 8, width: 2, height: 2},
+    {inlineDataLength: 8, width: 1, height: 1},
+  ];
+
+  assert.strictEqual(tex.mips.length, expectedMips.length);
+  for (let i = 0; i < expectedMips.length; i++) {
+    const mip: Mip = tex.mips[i]!;
+    const expected = expectedMips[i];
+
+    assert.strictEqual(mip.dataResourceIndex, i);
+    assert.strictEqual(mip.inlineData.length, expected.inlineDataLength);
+    assert.strictEqual(mip.width, expected.width);
+    assert.strictEqual(mip.height, expected.height);
+    assert.strictEqual(mip.depth, 1);
+  }
+
+  assert.strictEqual(tex.isVirtual, false);
+
+  assert.deepStrictEqual(tex.noneName, new MinimalName(0, 0));
+});
+
 test("Ad-hoc parsing test", async () => {
   const version = UEVersion.UE5_2;
 
