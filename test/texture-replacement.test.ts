@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import {readFile} from "node:fs/promises";
 import {test} from "node:test";
 
 import {decodeTextureMip} from "../src/texture/decoding.ts";
@@ -10,17 +9,8 @@ import {UEVersion} from "../src/ue/versioning.ts";
 import {PACKAGE_FILE_TAG} from "../src/ue/summary.ts";
 import {BulkDataFlags, BulkType} from "../src/ue/uasset.ts";
 import {UINT32_MAX} from "../src/util.ts";
-import {loadWasm} from "./util.ts";
+import {loadWasm, readAsset} from "./util.ts";
 import {generateTextureMips} from "../src/texture/mips.ts";
-
-async function readAsset(basePath: string, version: UEVersion = UEVersion.UE5_4) {
-  const [uasset, uexp, ubulk] = await Promise.all(
-    [".uasset", ".uexp", ".ubulk"].map(extension => (
-      readFile(new URL(basePath + extension, import.meta.url))
-    )),
-  );
-  return parseAsset({uasset, uexp, ubulk}, version);
-}
 
 // -------- Swap tests --------
 
@@ -447,6 +437,84 @@ test("Swap_UE5_7__Texture2D_BC1", async () => {
   assert.deepStrictEqual(progress.at(-1), [2_796_216, 2_796_216]);
 
   const replaced = parseAsset(output, UEVersion.UE5_7);
+  const texture = replaced.getTextureExport();
+  const expectedTexture = editorSwap.getTextureExport();
+  assert.equal(texture.importedWidth, 2048);
+  assert.equal(texture.importedHeight, 2048);
+  assert.equal(texture.mipCount, 12);
+  assert.equal(texture.skipOffset, expectedTexture.skipOffset);
+  assert.deepStrictEqual(
+    texture.mips.map(mip => [mip.width, mip.height, mip.depth]),
+    expectedTexture.mips.map(mip => [mip.width, mip.height, mip.depth]),
+  );
+  assert.deepStrictEqual(
+    replaced.uasset.dataResourceMap.map(resource => [
+      resource.serialOffset,
+      resource.serialSize,
+      resource.rawSize,
+      resource.bulkType,
+    ]),
+    editorSwap.uasset.dataResourceMap.map(resource => [
+      resource.serialOffset,
+      resource.serialSize,
+      resource.rawSize,
+      resource.bulkType,
+    ]),
+  );
+  assert.equal(replaced.uasset.summary.totalHeaderSize, editorSwap.uasset.summary.totalHeaderSize);
+  assert.equal(
+    replaced.uasset.summary.bulkDataStartOffset,
+    editorSwap.uasset.summary.bulkDataStartOffset,
+  );
+  assert.equal(
+    replaced.uasset.exportMap[0]?.serialSize,
+    editorSwap.uasset.exportMap[0]?.serialSize
+  );
+  assert.equal(
+    replaced.uasset.exportMap[0]?.serialOffset,
+    editorSwap.uasset.exportMap[0]?.serialOffset,
+  );
+
+  const lastMip = await decodeTextureMip(replaced, 11, wasm);
+  assert.ok(Math.abs(lastMip.rgba[0]! - 40) <= 10);
+  assert.ok(Math.abs(lastMip.rgba[1]! - 100) <= 10);
+  assert.ok(Math.abs(lastMip.rgba[2]! - 200) <= 10);
+  assert.equal(lastMip.rgba[3], 255);
+});
+
+test("Swap_UE5_8__Texture2D_BC1", async () => {
+  const original = await readAsset("./assets/ue5_8/swap_bc1/original/T_Blocks2_BC1_BC", UEVersion.UE5_8);
+  const editorSwap = await readAsset("./assets/ue5_8/swap_bc1/swapped/T_Blocks2_BC1_BC", UEVersion.UE5_8);
+  const originalSnapshot = structuredClone(original);
+
+  const wasm = await loadWasm();
+  const rgba = new Uint8Array(2048 * 2048 * 4);
+  for (let offset = 0; offset < rgba.length; offset += 4) {
+    rgba.set([40, 100, 200, 255], offset);
+  }
+
+  const progress: Array<readonly [number, number]> = [];
+  const originalRgba = rgba.slice();
+  const output = await replaceTexture(original, rgba, 2048, 2048, wasm, {
+    quality: 0,
+    onProgress: (completed, total) => progress.push([completed, total]),
+  });
+  assert.deepStrictEqual(structuredClone(original), originalSnapshot);
+  assert.deepStrictEqual(rgba, originalRgba);
+  assert.equal(output.uasset.byteLength, editorSwap.files.uasset.byteLength);
+  assert.equal(output.uexp.byteLength, editorSwap.files.uexp.byteLength);
+  assert.equal(output.ubulk?.byteLength, editorSwap.files.ubulk?.byteLength);
+  assert.equal(
+    new DataView(output.uexp.buffer, output.uexp.byteOffset).getUint32(
+      output.uexp.byteLength - 4,
+      true,
+    ),
+    PACKAGE_FILE_TAG,
+  );
+  assert.deepStrictEqual(progress[0], [0, 2_796_216]);
+  assert.deepStrictEqual(progress.at(-1), [2_796_216, 2_796_216]);
+
+  const replaced = parseAsset(output, UEVersion.UE5_8);
   const texture = replaced.getTextureExport();
   const expectedTexture = editorSwap.getTextureExport();
   assert.equal(texture.importedWidth, 2048);

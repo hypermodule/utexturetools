@@ -4,7 +4,7 @@
 
 A web app for making simple texture mods for UE5 games. It is inspired by matyalatte's great
 [UE4-DDS-Tools](https://github.com/matyalatte/UE4-DDS-Tools), which unfortunately is no longer
-maintained. The main addition provided by this app is support for Virtual Textures and UE 5.5–5.7.
+maintained. The main addition provided by this app is support for Virtual Textures and UE 5.5–5.8.
 The project is open-source (MIT license) and contributions are welcome. Some advanced texture types
 (like texture arrays and cubemaps) are not supported.
 

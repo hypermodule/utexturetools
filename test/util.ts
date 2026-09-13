@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 
 import {BcWasm} from "../src/wasm/wasm.ts";
+import {UEVersion} from "../src/ue/versioning.ts";
+import {parseAsset} from "../src/ue/cooked-asset.ts";
 
 export async function loadWasm(): Promise<BcWasm> {
   const binary = await readFile(new URL("../wasm/bcencdec.wasm", import.meta.url));
@@ -34,4 +36,14 @@ export function readPpmPixels(bytes: Uint8Array, width: number, height: number):
   const pixels = bytes.subarray(offset + 1);
   assert.equal(pixels.length, width * height * 3);
   return pixels;
+}
+
+export async function readAsset(basePath: string, version: UEVersion = UEVersion.UE5_4) {
+  const [uasset, uexp, ubulk] = await Promise.all(
+    [".uasset", ".uexp", ".ubulk"].map(extension => (
+      readFile(new URL(basePath + extension, import.meta.url))
+    )),
+  );
+
+  return parseAsset({uasset, uexp, ubulk}, version);
 }
