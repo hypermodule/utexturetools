@@ -11,6 +11,7 @@ export const UEVersion = {
   UE5_5: 505_000,
   UE5_6: 506_000,
   UE5_7: 507_000,
+  UE5_8: 508_000,
 } as const;
 
 export type UEVersion = (typeof UEVersion)[keyof typeof UEVersion];

@@ -32,7 +32,7 @@ export class UAsset {
 
     // ImportMap
     reader.position = asset.summary.importOffset;
-    asset.importMap = reader.readArray(asset.summary.importCount, ObjectImport.read);
+    asset.importMap = reader.readArray(asset.summary.importCount, r => ObjectImport.read(r, ver));
 
     // ExportMap
     reader.position = asset.summary.exportOffset;
@@ -120,7 +120,7 @@ export class UAsset {
     // ImportMap
     this.summary.importOffset = writer.position;
     for (const imp of this.importMap) {
-      imp.write(writer);
+      imp.write(writer, ver);
     }
 
     // ExportMap
@@ -306,25 +306,36 @@ export class ObjectImport {
   className = new MinimalName(0, 0);
   outerIndex = 0; // i32
   objectName = new MinimalName(0, 0);
+  packageName = new MinimalName(0, 0);
   importOptional = false; // bool32
 
-  static read(reader: AssetReader): ObjectImport {
+  static read(reader: AssetReader, ver: UEVersion): ObjectImport {
     const imp = new ObjectImport();
 
     imp.classPackage = MinimalName.read(reader);
     imp.className = MinimalName.read(reader);
     imp.outerIndex = reader.readInt32();
     imp.objectName = MinimalName.read(reader);
+
+    if (ver >= UEVersion.UE5_8) {
+      imp.packageName = MinimalName.read(reader);
+    }
+
     imp.importOptional = reader.readBoolean32();
 
     return imp;
   }
 
-  write(writer: AssetWriter): void {
+  write(writer: AssetWriter, ver: UEVersion): void {
     this.classPackage.write(writer);
     this.className.write(writer);
     writer.writeInt32(this.outerIndex);
     this.objectName.write(writer);
+
+    if (ver >= UEVersion.UE5_8) {
+      this.packageName.write(writer);
+    }
+
     writer.writeBoolean32(this.importOptional);
   }
 }
