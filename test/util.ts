@@ -10,7 +10,12 @@ export async function loadWasm(): Promise<BcWasm> {
   return BcWasm.load(new URL(`data:application/wasm;base64,${binary.toString("base64")}`));
 }
 
-export function readPpmPixels(bytes: Uint8Array, width: number, height: number): Uint8Array {
+export function readPpmPixels(
+  bytes: Uint8Array,
+  width: number,
+  height: number,
+  includeAlpha = false
+): Uint8Array {
   let offset = 0;
 
   function readToken(): string {
@@ -35,7 +40,23 @@ export function readPpmPixels(bytes: Uint8Array, width: number, height: number):
 
   const pixels = bytes.subarray(offset + 1);
   assert.equal(pixels.length, width * height * 3);
-  return pixels;
+
+  if (!includeAlpha) {
+    return pixels;
+  }
+
+  const rgba = new Uint8Array(width * height * 4);
+
+  for (let pixel = 0; pixel < width * height; pixel++) {
+    const rgbaOffset = pixel * 4;
+    const rgbOffset = pixel * 3;
+    rgba[rgbaOffset] = pixels[rgbOffset];
+    rgba[rgbaOffset + 1] = pixels[rgbOffset + 1];
+    rgba[rgbaOffset + 2] = pixels[rgbOffset + 2];
+    rgba[rgbaOffset + 3] = 255;
+  }
+
+  return rgba;
 }
 
 export async function readAsset(basePath: string, version: UEVersion = UEVersion.UE5_4) {

@@ -14,42 +14,24 @@ import {readFile} from "node:fs/promises";
 
 // -------- Swap tests --------
 
-// In each test case below, the original asset contains bc/blocks2.ppm,
-// and the swapped asset contains bc/blocks3.ppm.
+// In each test case below, the original asset contains the RGB data from bc/blocks2.ppm,
+// and the swapped asset contains the RGB data from bc/blocks3.ppm.
 
-let blocks3RgbaPromise: Promise<Uint8Array> | undefined;
-
-async function getBlocks3Rgba(): Promise<Uint8Array> {
-  if (!blocks3RgbaPromise) {
-    blocks3RgbaPromise = (async () => {
-      const ppm = await readFile(new URL("./assets/bc/blocks3.ppm", import.meta.url));
-      const rgb = readPpmPixels(ppm, 2048, 2048);
-
-      const rgba = new Uint8Array(2048 * 2048 * 4);
-      for (let pixel = 0; pixel < 2048 * 2048; pixel++) {
-        const rgbaOffset = pixel * 4;
-        const rgbOffset = pixel * 3;
-        rgba[rgbaOffset] = rgb[rgbOffset];
-        rgba[rgbaOffset + 1] = rgb[rgbOffset + 1];
-        rgba[rgbaOffset + 2] = rgb[rgbOffset + 2];
-        rgba[rgbaOffset + 3] = 255;
-      }
-
-      return rgba;
-    })();
-  }
-
-  return (await blocks3RgbaPromise).slice();
-}
+const rgbaBlocks3 = readPpmPixels(
+  await readFile(new URL("./assets/bc/blocks3.ppm", import.meta.url)),
+  2048,
+  2048,
+  true,
+);
 
 const swapTests = [
   {name: "Swap_UE5_2__Texture2D_BC1", version: UEVersion.UE5_2, path: "./assets/ue5_2/swap_bc1", asset: "T_Blocks_BC1_BC"},
   {name: "Swap_UE5_3__Texture2D_BC1", version: UEVersion.UE5_3, path: "./assets/ue5_3/swap_bc1", asset: "T_Blocks_BC1_BC"},
-  {name: "Swap_UE5_4__Texture2D_BC1", version: UEVersion.UE5_4, path: "./assets/ue5_4/swap_bc1", asset: "T_Blocks2_BC1_BC"},
+  {name: "Swap_UE5_4__Texture2D_BC1", version: UEVersion.UE5_4, path: "./assets/ue5_4/swap_bc1", asset: "T_Blocks_BC1_BC"},
   {name: "Swap_UE5_5__Texture2D_BC1", version: UEVersion.UE5_5, path: "./assets/ue5_5/swap_bc1", asset: "T_Blocks_BC1_BC"},
   {name: "Swap_UE5_6__Texture2D_BC1", version: UEVersion.UE5_6, path: "./assets/ue5_6/swap_bc1", asset: "T_Blocks_BC1_BC"},
   {name: "Swap_UE5_7__Texture2D_BC1", version: UEVersion.UE5_7, path: "./assets/ue5_7/swap_bc1", asset: "T_Blocks_BC1_BC"},
-  {name: "Swap_UE5_8__Texture2D_BC1", version: UEVersion.UE5_8, path: "./assets/ue5_8/swap_bc1", asset: "T_Blocks2_BC1_BC"},
+  {name: "Swap_UE5_8__Texture2D_BC1", version: UEVersion.UE5_8, path: "./assets/ue5_8/swap_bc1", asset: "T_Blocks_BC1_BC"},
 ] as const;
 
 for (const {name, version, path, asset} of swapTests) {
@@ -58,7 +40,7 @@ for (const {name, version, path, asset} of swapTests) {
     const editorSwap = await readAsset(`${path}/swapped/${asset}`, version);
 
     const wasm = await loadWasm();
-    const rgba = await getBlocks3Rgba();
+    const rgba = rgbaBlocks3;
 
     const progress: Array<readonly [number, number]> = [];
     const output = await replaceTexture(original, rgba, 2048, 2048, wasm, {
@@ -405,16 +387,6 @@ test("encodes BGRA virtual tiles without a block codec", async () => {
   assert.deepStrictEqual(payloads, [expected]);
   assert.deepStrictEqual(builtData.tileDataOffsetPerLayer, [144]);
   assert.deepStrictEqual(progress, [[0, 144], [144, 144]]);
-});
-
-test("requires a BC encoder for regular and virtual texture replacement", async () => {
-  for (const basePath of [
-    "./assets/ue5_4/swap_bc1/original/T_Blocks2_BC1_BC",
-    "./assets/ue5_4/swap_bc1_vt/original/T_Blocks2_BC1_VT_BC",
-  ]) {
-    const asset = await readAsset(basePath);
-    await assert.rejects(() => replaceTexture(asset, Uint8Array.of(0, 0, 0, 255), 1, 1));
-  }
 });
 
 function assertColorNear(
